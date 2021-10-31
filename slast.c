@@ -3,6 +3,7 @@
 #include<utmp.h>
 #include<malloc.h>
 
+// test
 typedef struct {
   int *array;
   size_t used;
