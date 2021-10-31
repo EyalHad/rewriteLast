@@ -2,6 +2,7 @@
 #include<fcntl.h>
 #include<utmp.h>
 #include<malloc.h>
+#include<time.h>
 
 // test
 typedef struct {
@@ -47,6 +48,8 @@ int main(int argv)
     
     while (read(fd, &cr, reclen) == reclen)
     {
+
+        long c;
         switch (cr.ut_type)
         {
         case 1:
@@ -59,7 +62,9 @@ int main(int argv)
             printf("%s\t ", cr.ut_user); /* user */
             printf("system boot \t ");
             printf("%s\t", cr.ut_host); /* 5.11.0-38 generic (address) */
-            printf("%d\t",cr.ut_tv);
+            // printf("%d\t",cr.ut_tv);
+            c = cr.ut_tv.tv_sec;
+            printf("%.20s\t", ctime(&c));
             printf("\n");
 
 
@@ -70,7 +75,10 @@ int main(int argv)
             printf("%s\t ", cr.ut_user); /* user */
             printf("%s\t\t", cr.ut_line);
             printf(" %s\t\t\t", cr.ut_host); /* 5.11.0-38 generic (address) */
-            printf("%d\t ",cr.ut_tv);
+            // printf("%d\t ",cr.ut_tv);
+            c = cr.ut_tv.tv_sec;
+            printf("%.20s\t", ctime(&c));
+  
             printf("\n");
 
 
