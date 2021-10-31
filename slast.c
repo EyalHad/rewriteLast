@@ -3,8 +3,9 @@
 #include<utmp.h>
 #include<malloc.h>
 #include<time.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-// test
 typedef struct {
   int *array;
   size_t used;
@@ -33,73 +34,56 @@ void freeArray(Array *a) {
   a->used = a->size = 0;
 }
 
-int main(int argv)
+int main(int argc, char *argv[])
 {
-    int fd;
-    struct utmp cr;
-    size_t reclen = sizeof(struct utmp);
 
-    char *to_print = (char *)malloc(reclen);
-    fd = open(WTMP_FILE, O_RDONLY);
-    if (fd == -1){
-        perror("Couldn't open file:");
-        exit(1);
-    }
-    
-    while (read(fd, &cr, reclen) == reclen)
-    {
+  if (argc != 2 ){
+    printf("This program takes a single parameter\n");
+    exit(1);
+  }
+  int num_of_entries = atoi(argv[1]);
+  int fd;
+  struct utmp cr;
+  size_t reclen = sizeof(struct utmp);
 
-        long c;
-        switch (cr.ut_type)
-        {
-        case 1:
-        case 8:
-            // printf("%d\n",cr.ut_type);
-
-            break;
-        case 2:
-            // printf("%d\n",cr.ut_type);
-            printf("%s\t ", cr.ut_user); /* user */
-            printf("system boot \t ");
-            printf("%s\t", cr.ut_host); /* 5.11.0-38 generic (address) */
-            // printf("%d\t",cr.ut_tv);
-            c = cr.ut_tv.tv_sec;
-            printf("%.20s\t", ctime(&c));
-            printf("\n");
-
-
-            break;
-                                
-        default:
-            // printf("%d\n",cr.ut_type);
-            printf("%s\t ", cr.ut_user); /* user */
-            printf("%s\t\t", cr.ut_line);
-            printf(" %s\t\t\t", cr.ut_host); /* 5.11.0-38 generic (address) */
-            // printf("%d\t ",cr.ut_tv);
-            c = cr.ut_tv.tv_sec;
-            printf("%.20s\t", ctime(&c));
+  fd = open(WTMP_FILE, O_RDONLY);
+  if (fd == -1){
+      perror("Couldn't open file");
+      exit(1);
+  }
   
-            printf("\n");
+  int iter = 0;
+  while (read(fd, &cr, reclen) == reclen && iter < num_of_entries)
+  {
+      long c;
+      switch (cr.ut_type)
+      {
+      case 1:
+        // RUN_LVL, we need to skip this event
+        break;
+      case 8:
+        // DEAD_PROCESS, we need to dkip this event
+        break;
+      case 2:
+        // BOOT_TIME
+        printf("%s\t ", cr.ut_user); /* user */
+        printf("system boot \t ");
+        printf("%s\t", cr.ut_host); /* 5.11.0-38 generic (address) */
+        c = cr.ut_tv.tv_sec;
+        printf("%.20s\t", ctime(&c));
+        printf("\n");
+        break;               
+      default:
+        // all other events
+        printf("%s\t ", cr.ut_user); /* user */
+        printf("%s\t\t", cr.ut_line);
+        printf(" %s\t\t\t", cr.ut_host); /* 5.11.0-38 generic (address) */
+        c = cr.ut_tv.tv_sec;
+        printf("%.20s\t\n", ctime(&c));
+      }
+  }
+  
 
-
-        }
-         
-        
-        char is_tilde = cr.ut_line[0];
-        // if (is_tilde = '~'){
-            // printf("system boot\t");
-        // }else{
-            // printf("%s\t", cr.ut_line); /* this is needed */ 
-        // }
-
-        // printf("%s\t", cr.ut_host); /* 5.11.0-38 generic (address) */
-
-        // printf("%d\t",cr.ut_tv);
-        // printf("%s\t", cr.ut_id); /* currently ~~~ */
-        // printf("\n");
-    }
-    
-
-    close (fd);
-    return 0;
+  close (fd);
+  return 0;
 }
