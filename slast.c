@@ -5,9 +5,10 @@
 #include<time.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 typedef struct {
-  int *array;
+  string *array;
   size_t used;
   size_t size;
 } Array;
@@ -81,6 +82,7 @@ int main(int argc, char *argv[])
         c = cr.ut_tv.tv_sec;
         printf("%.20s\t\n", ctime(&c));
       }
+      ++iter;
   }
   
 
