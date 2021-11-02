@@ -29,52 +29,64 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    char* records;
-    records = (char*)malloc(reclen);
-    if (!records){
-        printf("failed to alloocate memory.\n");
-        exit(1);
-    }
-    
-    
+    int total_amount = 0;
     while (read(fd, &cr, reclen) == reclen)
     {
+        if (cr.ut_type != 8 && cr.ut_type != 1){ total_amount++; }   
+    }
+    close (fd);
 
+    struct utmp records[total_amount];
+
+    fd = open(WTMP_FILE, O_RDONLY);
+    if (fd == -1){
+        perror("Couldn't open file:");
+        exit(1);
+    }
+
+    int i = total_amount - 1;
+    while (read(fd, &cr, reclen) == reclen)
+    {
+        if (cr.ut_type != 8 && cr.ut_type != 1){ records[i--] = cr; }
+    }
+
+    for (size_t i = 0; (i < req_amount && i < total_amount); i++)
+    {
+
+        records[i];
         long c;
+        if ((records[i].ut_type) == 2){
 
-        switch (cr.ut_type)
-        {
-        case 1:
-        case 8:
-            break;
-        case 2:
-
-            printf("%s\t ", cr.ut_user);      /* user */
+            printf("%s\t ", records[i].ut_user); 
             printf("system boot \t ");
-            printf("%s\t", cr.ut_host);       /* (address) */
-
-            c = cr.ut_tv.tv_sec;
+            printf("%s\t", records[i].ut_host);
+            c = records[i].ut_tv.tv_sec;
             printf("%.20s\t", ctime(&c));     /* time */
 
             printf("\n");
 
-            break;
-                                
-        default:
+        }else{
 
-            printf("%s\t ", cr.ut_user);      /* user */
-            printf("%s\t\t", cr.ut_line);
-            printf(" %s\t\t\t", cr.ut_host);  /* (address) */
+            printf("%s\t ", records[i].ut_user);      /* user */
+            printf("%s\t\t", records[i].ut_line);
+            printf(" %s\t\t\t", records[i].ut_host);  /* host */
 
-            c = cr.ut_tv.tv_sec;
+            c = records[i].ut_tv.tv_sec;
             printf("%.20s\t", ctime(&c));     /* time */
   
             printf("\n");
 
         }
-    }
-    
 
+    }
+
+        time_t tmp;
+        tmp = records[total_amount-1].ut_tv.tv_sec;
+        struct tm* time_struct = gmtime(&tmp);
+        printf("\nwtmp begins ");
+        printf("%.20s ", ctime(&tmp));
+        printf("%d\n", time_struct->tm_year + 1900);
+        
     close (fd);
     return 0;
 }
